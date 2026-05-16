@@ -16,12 +16,10 @@ steps:
     command: 'init'
     workingDirectory: ${{ parameters.workingDir }}
 
-    backendServiceArm: 'ado-sc'
+    backendServiceArm: 'Service-connection-007'
 
-    backendAzureRmResourceGroupName: 'rg-demo'
-
-    backendAzureRmStorageAccountName: 'statedemo123'
+    backendAzureRmStorageAccountName: 'storagebackend007'
 
     backendAzureRmContainerName: 'tfstate'
 
-    backendAzureRmKey: 'terraform.tfstate'
+    backendAzureRmKey: 'dev.tfstate'
