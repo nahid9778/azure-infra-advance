@@ -10,6 +10,9 @@ steps:
   inputs:
     provider: 'azurerm'
     command: 'apply'
+
     workingDirectory: ${{ parameters.workingDir }}
 
     environmentServiceNameAzureRM: 'Service-connection-007'
+
+    commandOptions: '-auto-approve'
