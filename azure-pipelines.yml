@@ -60,4 +60,94 @@ stages:
     - task: TerraformTaskV4@4
       displayName: Terraform Fmt
       inputs:
+        provider: 'azurerm'
+        command: 'custom'
+        workingDirectory: '$(workingDir)'
+        outputTo: 'console'
+        customCommand: 'fmt'
+        environmentServiceNameAzureRM: 'Service-connection-007'
+
+# =========================================================
+# SCANNING STAGE
+# =========================================================
+- stage: Scanning
+  displayName: Scanning
+  dependsOn: PreCommit
+
+  jobs:
+
+  # -----------------------------------------------------
+  # TFSEC SCAN
+  # -----------------------------------------------------
+  - job: TFSecScanning
+    displayName: TFSec Scanning
+
+    steps:
+
+    - checkout: self
+
+    - template: templates/tfsec-scan.yml
+      parameters:
+        workingDir: '$(workingDir)'
+
+# =========================================================
+# PLAN STAGE
+# =========================================================
+- stage: Plan
+  displayName: Terraform Plan
+  dependsOn: Scanning
+
+  jobs:
+  - job: TerraformPlan
+    displayName: Terraform Plan Job
+
+    steps:
+
+    - checkout: self
+
+    # -----------------------------------------------------
+    # Terraform Init
+    # -----------------------------------------------------
+    - template: templates/terraform-init.yml
+      parameters:
+        workingDir: '$(workingDir)'
+
+    # -----------------------------------------------------
+    # Terraform Plan
+    # -----------------------------------------------------
+    - template: templates/terraform-plan.yml
+      parameters:
+        workingDir: '$(workingDir)'
+
+# =========================================================
+# APPLY STAGE
+# =========================================================
+- stage: Apply
+  displayName: Terraform Apply
+  dependsOn: Plan
+
+  jobs:
+  - deployment: TerraformApply
+    displayName: Terraform Apply Deployment
+    environment: dev
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - checkout: self
+
+          # -------------------------------------------------
+          # Terraform Init
+          # -------------------------------------------------
+          - template: templates/terraform-init.yml
+            parameters:
+              workingDir: '$(workingDir)'
+
+          # -------------------------------------------------
+          # Terraform Apply
+          # -------------------------------------------------
+          - template: templates/terraform-apply.yml
+            parameters:
               workingDir: '$(workingDir)'
