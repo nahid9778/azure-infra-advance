@@ -1,0 +1,15 @@
+parameters:
+- name: workingDir
+  type: string
+
+steps:
+
+- task: TerraformTaskV4@4
+  displayName: Terraform Apply
+
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: ${{ parameters.workingDir }}
+
+    environmentServiceNameAzureRM: 'ado-sc'
