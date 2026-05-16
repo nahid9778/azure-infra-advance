@@ -12,4 +12,4 @@ steps:
     command: 'plan'
     workingDirectory: ${{ parameters.workingDir }}
 
-    environmentServiceNameAzureRM: 'ado-sc'
+    environmentServiceNameAzureRM: 'Service-connection-007'
