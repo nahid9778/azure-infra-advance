@@ -1,0 +1,12 @@
+parameters:
+- name: workingDir
+  type: string
+
+steps:
+
+- script: |
+    curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+    tfsec ${{ parameters.workingDir }}
+
+  displayName: Run tfsec Scan
