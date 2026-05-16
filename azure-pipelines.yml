@@ -2,70 +2,33 @@ trigger:
 - main
 
 pool:
-  name: InfraPool
+  vmImage: ubuntu-latest
 
-variables:
-  workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
-  serviceConnection: 'Service-connection-007'
-  backendStorage: 'storagebackend007'
-  backendContainer: 'tfstate'
-  backendKey: 'dev.tfstate'
+steps:
 
-stages:
+- checkout: self
 
-# =====================================================
-# PRECHECK
-# =====================================================
-- stage: Precheck
+# Terraform Init
+- template: templates/terraform-init.yml
+  parameters:
+    workingDir: 'environment/dev'
 
-  jobs:
-  - job: Validate
+# Terraform Validate
+- template: templates/terraform-validate.yml
+  parameters:
+    workingDir: 'environment/dev'
 
-    steps:
+# tfsec Scan
+- template: templates/tfsec-scan.yml
+  parameters:
+    workingDir: 'environment/dev'
 
-    - checkout: self
+# Terraform Plan
+- template: templates/terraform-plan.yml
+  parameters:
+    workingDir: 'environment/dev'
 
-    # Cache
-    - template: templates/terraform-cache.yml
-      parameters:
-        workingDirectory: $(workingDirectory)
-
-    # Init
-    - template: templates/terraform-init.yml
-      parameters:
-        workingDirectory: $(workingDirectory)
-        serviceConnection: $(serviceConnection)
-        backendStorage: $(backendStorage)
-        backendContainer: $(backendContainer)
-        backendKey: $(backendKey)
-
-    # Validate
-    - task: TerraformTask@5
-      inputs:
-        provider: azurerm
-        command: validate
-        workingDirectory: $(workingDirectory)
-
-# =====================================================
-# PLAN
-# =====================================================
-- stage: Plan
-
-  jobs:
-
-  - template: templates/terraform-plan.yml
-    parameters:
-      workingDirectory: $(workingDirectory)
-      serviceConnection: $(serviceConnection)
-
-# =====================================================
-# DEPLOY
-# =====================================================
-- stage: Deploy
-
-  jobs:
-
-  - template: templates/terraform-apply.yml
-    parameters:
-      workingDirectory: $(workingDirectory)
-      serviceConnection: $(serviceConnection)
+# Terraform Apply
+- template: templates/terraform-apply.yml
+  parameters:
+    workingDir: 'environment/dev'
