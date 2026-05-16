@@ -2,10 +2,11 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: InfraPool
 
 steps:
 
+# Checkout Code
 - checkout: self
 
 # Terraform Init
@@ -18,7 +19,7 @@ steps:
   parameters:
     workingDir: 'environment/dev'
 
-# tfsec Scan
+# tfsec Security Scan
 - template: templates/tfsec-scan.yml
   parameters:
     workingDir: 'environment/dev'
