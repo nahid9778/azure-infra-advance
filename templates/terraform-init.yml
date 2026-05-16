@@ -14,9 +14,12 @@ steps:
   inputs:
     provider: 'azurerm'
     command: 'init'
+
     workingDirectory: ${{ parameters.workingDir }}
 
     backendServiceArm: 'Service-connection-007'
+
+    backendAzureRmResourceGroupName: 'rg007'
 
     backendAzureRmStorageAccountName: 'storagebackend007'
 
