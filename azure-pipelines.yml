@@ -1,35 +1,63 @@
+name: Infra
+
 trigger:
 - main
+- features/*
 
+# =========================================================
+# DEFAULT AGENT POOL
+# =========================================================
 pool:
   name: InfraPool
 
-steps:
+variables:
+  workingDir: '$(System.DefaultWorkingDirectory)/environment/dev'
 
-# Checkout Code
-- checkout: self
+stages:
 
-# Terraform Init
-- template: templates/terraform-init.yml
-  parameters:
-    workingDir: 'environment/dev'
+# =========================================================
+# PRE-COMMIT STAGE
+# =========================================================
+- stage: PreCommit
+  displayName: Pre Commit
 
-# Terraform Validate
-- template: templates/terraform-validate.yml
-  parameters:
-    workingDir: 'environment/dev'
+  jobs:
+  - job: Terraform_PreCheck
+    displayName: Terraform Init Validate
 
-# tfsec Security Scan
-- template: templates/tfsec-scan.yml
-  parameters:
-    workingDir: 'environment/dev'
+    steps:
 
-# Terraform Plan
-- template: templates/terraform-plan.yml
-  parameters:
-    workingDir: 'environment/dev'
+    - checkout: self
 
-# Terraform Apply
-- template: templates/terraform-apply.yml
-  parameters:
-    workingDir: 'environment/dev'
+    # -----------------------------------------------------
+    # Restore Terraform Cache
+    # -----------------------------------------------------
+    - task: Cache@2
+      displayName: Restore Terraform Cache
+      inputs:
+        key: 'terraform | "$(Agent.OS)" | environment/dev/.terraform.lock.hcl'
+        restoreKeys: |
+          terraform | "$(Agent.OS)"
+        path: '$(System.DefaultWorkingDirectory)/environment/dev/.terraform'
+
+    # -----------------------------------------------------
+    # Terraform Init Template
+    # -----------------------------------------------------
+    - template: templates/terraform-init.yml
+      parameters:
+        workingDir: '$(workingDir)'
+
+    # -----------------------------------------------------
+    # Terraform Validate Template
+    # -----------------------------------------------------
+    - template: templates/terraform-validate.yml
+      parameters:
+        workingDir: '$(workingDir)'
+
+    # -----------------------------------------------------
+    # Terraform Format
+    # -----------------------------------------------------
+    - task: TerraformTaskV4@4
+      displayName: Terraform Fmt
+      inputs:
+              workingDir: '$(workingDir)'
